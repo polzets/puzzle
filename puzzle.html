@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Пазл-генератор (до 16 частей)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #e0f7fa, #cfd8dc);
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      background: white;
+      border: 1px solid #ddd;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #263238;
+      margin-bottom: 1rem;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 1rem auto;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      background-color: #4dd0e1;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    .controls button:hover {
+      background-color: #00acc1;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .piece {
+      position: relative;
+      background: #fff;
+      border: 1px solid #ccc;
+      overflow: hidden;
+    }
+
+    .piece img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .piece button {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    /* Сетки */
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ИНФОРМАЦИОННЫЕ ТЕХНОЛОГИИ ДЛЯ ДЕТЕЙ И ВЗРОСЛЫХ. ПАЗЛ-ГЕНЕРАТОР</h1>
+
+    <input type="file" accept="image/*" id="upload"/>
+
+    <div class="controls">
+      <button onclick="splitImage(2)">4 пазла</button>
+      <button onclick="splitImage(3)">9 пазлов</button>
+      <button onclick="splitImage(4)">16 пазлов</button>
+    </div>
+
+    <div id="pieces" class="grid grid-cols-2"></div>
+  </div>
+
+ <footer>
+  &copy; 2025 Пазл-генератор |
+  <a href="https://vk.com/ivpython " target="_blank" rel="noopener noreferrer" style="color: #00bcd4; text-decoration: none;">
+    Мой профиль ВКонтакте
+  </a>
+</footer>
+
+  <script>
+    const uploadInput = document.getElementById('upload');
+    const piecesContainer = document.getElementById('pieces');
+    let image = null;
+
+    uploadInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          image = img;
+          splitImage(2); // по умолчанию
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function splitImage(gridSize) {
+      if (!image) return;
+      piecesContainer.innerHTML = '';
+      const cols = gridSize;
+      const rows = gridSize;
+
+      const pieceWidth = image.width / cols;
+      const pieceHeight = image.height / rows;
+
+      piecesContainer.className = 'grid';
+      if (cols === 2) piecesContainer.classList.add('grid-cols-2');
+      else if (cols === 3) piecesContainer.classList.add('grid-cols-3');
+      else if (cols === 4) piecesContainer.classList.add('grid-cols-4');
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const canvas = document.createElement('canvas');
+          canvas.width = pieceWidth;
+          canvas.height = pieceHeight;
+          const ctx = canvas.getContext('2d');
+
+          ctx.drawImage(
+            image,
+            col * pieceWidth,
+            row * pieceHeight,
+            pieceWidth,
+            pieceHeight,
+            0,
+            0,
+            pieceWidth,
+            pieceHeight
+          );
+
+          const pieceDiv = document.createElement('div');
+          pieceDiv.className = 'piece';
+
+          const imgElement = document.createElement('img');
+          imgElement.src = canvas.toDataURL();
+
+          const downloadBtn = document.createElement('button');
+          downloadBtn.textContent = 'Скачать';
+          downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `puzzle-piece-${row}-${col}.png`;
+            link.click();
+          };
+
+          pieceDiv.appendChild(imgElement);
+          pieceDiv.appendChild(downloadBtn);
+
+          piecesContainer.appendChild(pieceDiv);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
